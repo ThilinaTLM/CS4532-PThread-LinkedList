@@ -24,7 +24,7 @@ struct ThreadContext {
     generator::NumberGenerator *gen_remove;
 
     // results
-    std::vector<long>* durations;
+    std::vector<long> *durations;
 
 };
 
@@ -47,7 +47,7 @@ double std_dev(std::vector<long> &results, long double mean) {
 void *run(void *args) {
 
     ThreadContext context = *(ThreadContext *) args;
-    llist::AbstractLinkedList<int>* list = context.list;
+    llist::AbstractLinkedList<int> *list = context.list;
     generator::NumberGenerator gen_insert = *context.gen_insert;
     generator::NumberGenerator gen_member = *context.gen_member;
     generator::NumberGenerator gen_remove = *context.gen_remove;
@@ -100,7 +100,8 @@ enum ListType {
     SAFE_FAST_LINKED_LIST = 2
 };
 
-std::pair<double, double> start_test(ListType lt, int threads, int num_of_vals, int num_of_op, std::tuple<double, double, double> op_frac) {
+std::pair<double, double>
+start_test(ListType lt, int threads, int num_of_vals, int num_of_op, std::tuple<double, double, double> op_frac) {
     int const m_member = floor(std::get<Operation::MEMBER>(op_frac) * (double) num_of_op);
     int const m_insert = floor(std::get<Operation::INSERT>(op_frac) * (double) num_of_op);
     int const m_remove = floor(std::get<Operation::REMOVE>(op_frac) * (double) num_of_op);
@@ -127,7 +128,7 @@ std::pair<double, double> start_test(ListType lt, int threads, int num_of_vals, 
 
     // starting threads
     pthread_t thread_ids[threads];
-    std::vector<ThreadContext*> contexts;
+    std::vector<ThreadContext *> contexts;
 
     for (int i = 0; i < threads; i++) {
         auto ctx = new ThreadContext();
@@ -163,21 +164,18 @@ std::pair<double, double> start_test(ListType lt, int threads, int num_of_vals, 
 }
 
 void run_case(ListType lt, int n, int m, std::tuple<double, double, double> op_frac) {
-    std::cout << "================================ CASE ==============================" << std::endl;
-    std::cout << "N: " << n << ", M: " << m << ", M_member: " <<
-    std::get<Operation::MEMBER>(op_frac) << ", M_insert: " <<
-    std::get<Operation::INSERT>(op_frac) << ", M_remove: " <<
-    std::get<Operation::REMOVE>(op_frac) << std::endl << std::endl;
-
-    std::vector const threads = {1, 2, 4, 8};
-    int trials = 400;
+    std::vector<int> threads;
+    int const trials = 400;
 
     if (lt == ListType::LINKED_LIST) {
         std::cout << ":: Linked List" << std::endl;
+        threads = {1};
     } else if (lt == ListType::SAFE_LINKED_LIST) {
         std::cout << ":: Safe Linked List" << std::endl;
+        threads = {1, 2, 4, 8};
     } else if (lt == ListType::SAFE_FAST_LINKED_LIST) {
         std::cout << ":: Safe Fast Linked List" << std::endl;
+        threads = {1, 2, 4, 8};
     }
     for (auto thread: threads) {
         // run 400 times and get average
@@ -202,9 +200,42 @@ void run_case(ListType lt, int n, int m, std::tuple<double, double, double> op_f
 
 
 int main() {
-//    run_case(ListType::SAFE_FAST_LINKED_LIST, 1000, 10000, std::make_tuple(0.99, 0.005, 0.005));
-//    run_case(ListType::SAFE_FAST_LINKED_LIST, 1000, 10000, std::make_tuple(0.90, 0.05, 0.05));
-    run_case(ListType::SAFE_FAST_LINKED_LIST, 1000, 10000, std::make_tuple(0.50, 0.25, 0.25));
+
+    int const n = 1000;
+    int const m = 10000;
+
+    std::cout << "================================ CASE 01 ==============================" << std::endl;
+    auto op_frac1 = std::make_tuple(0.99, 0.005, 0.005);
+    std::cout << "N: " << n << ", M: " << m << ", M_member: "
+              << std::get<Operation::MEMBER>(op_frac1) << ", M_insert: "
+              << std::get<Operation::INSERT>(op_frac1) << ", M_remove: "
+              << std::get<Operation::REMOVE>(op_frac1) << std::endl << std::endl;
+
+    run_case(ListType::LINKED_LIST, 1000, 10000, op_frac1);
+    run_case(ListType::SAFE_LINKED_LIST, 1000, 10000, op_frac1);
+    run_case(ListType::SAFE_FAST_LINKED_LIST, 1000, 10000, op_frac1);
+
+    std::cout << "================================ CASE 02 ==============================" << std::endl;
+    auto op_frac2 = std::make_tuple(0.90, 0.05, 0.05);
+    std::cout << "N: " << n << ", M: " << m << ", M_member: "
+              << std::get<Operation::MEMBER>(op_frac2) << ", M_insert: "
+              << std::get<Operation::INSERT>(op_frac2) << ", M_remove: "
+              << std::get<Operation::REMOVE>(op_frac2) << std::endl << std::endl;
+
+    run_case(ListType::LINKED_LIST, 1000, 10000, op_frac2);
+    run_case(ListType::SAFE_LINKED_LIST, 1000, 10000, op_frac2);
+    run_case(ListType::SAFE_FAST_LINKED_LIST, 1000, 10000, op_frac2);
+
+    std::cout << "================================ CASE 03 ==============================" << std::endl;
+    auto op_frac3 = std::make_tuple(0.50, 0.25, 0.25);
+    std::cout << "N: " << n << ", M: " << m << ", M_member: "
+              << std::get<Operation::MEMBER>(op_frac3) << ", M_insert: "
+              << std::get<Operation::INSERT>(op_frac3) << ", M_remove: "
+              << std::get<Operation::REMOVE>(op_frac3) << std::endl << std::endl;
+
+    run_case(ListType::LINKED_LIST, 1000, 10000, op_frac3);
+    run_case(ListType::SAFE_LINKED_LIST, 1000, 10000, op_frac3);
+    run_case(ListType::SAFE_FAST_LINKED_LIST, 1000, 10000, op_frac3);
 }
 
 #pragma clang diagnostic pop
